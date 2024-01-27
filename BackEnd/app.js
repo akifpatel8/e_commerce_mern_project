@@ -7,7 +7,9 @@ app.use(express.json())  // to parse the incoming JSON data
 //Route imports
 
 const productRoute =require("./routes/productRoute")
+const user  = require("./routes/userRoute") 
 app.use("/api/v1", productRoute)
+app.use("/api/v1",user)
 
 //middleware for error
 app.use(errorMiddleware)
