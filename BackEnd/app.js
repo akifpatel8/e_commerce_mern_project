@@ -2,8 +2,10 @@ const express = require("express")
 const app = express()
 const errorMiddleware=require("./ middleware/error")
 const test=require("./ middleware/test")
+const cookieParser=require("cookie-parser")
 
 app.use(express.json())  // to parse the incoming JSON data
+app.use(cookieParser())
 //Route imports
 
 const productRoute =require("./routes/productRoute")
