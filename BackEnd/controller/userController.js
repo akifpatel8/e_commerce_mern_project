@@ -27,7 +27,7 @@ exports.loginUser=catchAsyncErrors(async(req,res,next)=>{
     if(!user){
         return next(new ErrorHandler("Invalid Email or Password",401))
     }
-    const isPasswordMatched = user.comparePassword(password)
+    const isPasswordMatched = await user.comparePassword(password)
     if(!isPasswordMatched){
         return next(new ErrorHandler("Invalid Email or Password",401))
     }
@@ -93,4 +93,92 @@ exports.resetPassowrd = catchAsyncErrors(async(req,res,next)=>{
     user.resetPasswordExpire=undefined
     await user.save({validateBeforeSave:false})
     sendToken(user,200,res) 
+})
+
+//get user details
+exports.getUserDetails=catchAsyncErrors(async(req,res,next)=>{
+    const user = await User.findById(req.user.id)
+    res.status(200).json({
+        sucess:true,
+        user
+    })
+})
+
+//change Password 
+exports.changePassword =catchAsyncErrors(async(req,res,next)=>{
+    const user = await User.findById(req.user.id).select("+password")
+    const isPasswordMatched = await user.comparePassword(req.body.oldPassword)
+    if(!isPasswordMatched){
+        return next(new ErrorHandler("Old Password is incorrect",400))
+    }
+    if(req.body.newPassword !== req.body.confirmPassword){
+        return next(new ErrorHandler("Password does not match",400))
+    }
+    user.password = req.body.newPassword
+    await user.save({validateBeforeSave:false})
+
+    sendToken(user,200,res)
+})
+
+//update user profile
+exports.updateProfile =catchAsyncErrors(async(req,res,next)=>{
+    const obj={
+        name:req.body.name,
+        email:req.body.email
+    }
+    const user = await User.findByIdAndUpdate(req.user.id,obj,{new:true,runValidators:true,useFindAndModify:false})
+    res.status(200).json({
+        sucess:true,
+    })
+})
+
+//get all users (admin)
+exports.getAllUsers =catchAsyncErrors(async(req,res,next)=>{
+    const users = await User.find()
+    res.status(200).json({
+        sucess:true,
+        users
+    })
+})
+
+//get users details (admin)
+exports.getSingleUser =catchAsyncErrors(async(req,res,next)=>{
+    const user = await User.findById(req.params.id)
+    if(!user){
+        return next(new ErrorHandler("Invalid user id",400))
+    }
+
+    res.status(200).json({
+        sucess:true,
+        user
+    })
+})
+
+//update user role(admin)
+exports.updateUserRole =catchAsyncErrors(async(req,res,next)=>{
+    const obj={
+        name:req.body.name,
+        email:req.body.email,
+        role:req.body.role
+    }
+    // if(!user){
+    //     return next(new ErrorHandler("Invalid user id",400))
+    // }
+    const user = await User.findByIdAndUpdate(req.params.id,obj,{new:true,runValidators:true,useFindAndModify:false})
+    res.status(200).json({
+        sucess:true,
+    })
+})
+
+//delete user(admin)
+exports.deleteUser =catchAsyncErrors(async(req,res,next)=>{
+    const user = await User.findById(req.params.id)
+    if(!user){
+        return next(new ErrorHandler("Invalid user id",400))
+    }
+    await user.deleteOne()
+    res.status(200).json({
+        sucess:true,
+        message:"user deleted successfully"
+    })
 })

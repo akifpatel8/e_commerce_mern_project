@@ -6,9 +6,9 @@ const router = express.Router()
 
 
 router.get("/products", getAllProducts)
-router.post("/product/new", isAuthenticatedUser,authorizeRoles("admin"), createProduct)
-router.put("/product/update/:id", isAuthenticatedUser,authorizeRoles("admin"), updateProduct)
-router.delete("/product/delete/:id", isAuthenticatedUser,authorizeRoles("admin"), deleteProduct)
+router.post("/admin/product/new", isAuthenticatedUser,authorizeRoles("admin"), createProduct)
+router.put("/admin/product/update/:id", isAuthenticatedUser,authorizeRoles("admin"), updateProduct)
+router.delete("/admin/product/delete/:id", isAuthenticatedUser,authorizeRoles("admin"), deleteProduct)
 router.get("/product/:id",productDetails)
 
 module.exports = router 
