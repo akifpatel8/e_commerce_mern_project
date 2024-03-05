@@ -81,3 +81,75 @@ exports.productDetails=catchAsyncErrors(async(req, res,next)=>{
 
 
 
+
+// create new review or update the review
+
+exports.createProductReview = catchAsyncErrors(async(req,res,next)=>{
+    const {rating,comment,productId}=req.body
+    const review={
+        user:req.user._id,
+        name:req.user.name,
+        rating:Number(rating),
+        comment
+    }
+    
+    const product = await Product.findById(productId)
+    const isReviewed = product.reviews.find((el)=>el.user.toString() === req.user._id.toString())
+
+    if(isReviewed){
+        product.reviews.forEach((el)=>{
+            if(el.user.toString() === req.user._id.toString()){
+                (el.rating = rating) ,
+                (el.comment = comment)
+            }
+    })
+    }else{
+        product.reviews.push(review)
+        product.numberOfReviews = product.reviews.length 
+    }
+    let avg = 0;
+    product.reviews.forEach((el)=>
+    avg+=el.rating ) 
+    product.ratings= avg / product.reviews.length
+    await product.save({validateBeforeSave:false})
+    res.status(200).json({
+        success:true,
+    })
+})
+
+// view all reviews 
+exports.getAllReviews = catchAsyncErrors(async(req,res,next)=>{
+    const product =  await Product.findById(req.query.id)
+    if (!product) {
+        return next(new ErrorHandler("product not found",404))
+    }
+    res.status(200).json({
+        success:true,
+        reviews:product.reviews
+    })
+})
+
+// delete review
+exports.deleteReview = catchAsyncErrors(async(req,res,next)=>{
+    const product =  await Product.findById(req.query.productId)
+    if (!product) {
+        return next(new ErrorHandler("product not found",404))
+    }
+    
+    const reviews = product.reviews.filter((el)=>el?._id.toString() !== req.query.id.toString())
+    console.log(reviews,"these are reviews");
+    let avg = 0;
+    reviews.forEach((el)=>
+    avg+=el.rating ) 
+    const ratings = avg / reviews.length
+    const numberOfReviews =  reviews.length
+    product.reviews=reviews
+    product.ratings=ratings
+    product.numberOfReviews=numberOfReviews
+    console.log(product,"this is the product");
+    await product.save({validateBeforeSave:false})
+    res.status(200).json({
+        success:true,
+        reviews:product.reviews
+    })
+})
