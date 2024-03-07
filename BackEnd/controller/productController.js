@@ -137,7 +137,6 @@ exports.deleteReview = catchAsyncErrors(async(req,res,next)=>{
     }
     
     const reviews = product.reviews.filter((el)=>el?._id.toString() !== req.query.id.toString())
-    console.log(reviews,"these are reviews");
     let avg = 0;
     reviews.forEach((el)=>
     avg+=el.rating ) 
@@ -146,7 +145,6 @@ exports.deleteReview = catchAsyncErrors(async(req,res,next)=>{
     product.reviews=reviews
     product.ratings=ratings
     product.numberOfReviews=numberOfReviews
-    console.log(product,"this is the product");
     await product.save({validateBeforeSave:false})
     res.status(200).json({
         success:true,
